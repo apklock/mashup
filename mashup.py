@@ -3,6 +3,7 @@ import geocoder
 import json
 import re
 import requests
+import operator
 
 
 INSPECTION_DOMAIN = 'http://info.kingcounty.gov'
@@ -117,6 +118,18 @@ def get_score_data(elem):
     return data
 
 
+# def sort_by_avg(d):
+    # return d['Average Score']
+
+    
+# def sort_by_high(d):
+    # return d['High Score']
+
+    
+# def sort_by_inspect(d):
+    # return d['Total Inspections']
+
+
 def result_generator(count):
     use_params = {
         'Inspection_Start': '10/11/2012',
@@ -128,10 +141,15 @@ def result_generator(count):
     parsed = parse_source(html, encoding)
     content_col = parsed.find("td", id="contentcol")
     data_list = restaurant_data_generator(content_col)
-    for data_div in data_list[:count]:
+    list1 = []
+    for data_div in data_list:
         metadata = extract_restaurant_metadata(data_div)
         inspection_data = get_score_data(data_div)
         metadata.update(inspection_data)
+        list1.append(metadata)
+        #yield metadata
+    list1 = sorted(list1, key=lambda x: x['Average Score'], reverse = True)
+    for metadata in list1[:count]:
         yield metadata
 
 
@@ -157,7 +175,7 @@ def get_geojson(result):
 
 if __name__ == '__main__':
     total_result = {'type': 'FeatureCollection', 'features': []}
-    for result in result_generator(20):
+    for result in result_generator(30):
         geojson = get_geojson(result)
         total_result['features'].append(geojson)
     with open('my_map.json', 'w') as fh:
