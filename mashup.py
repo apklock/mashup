@@ -136,7 +136,6 @@ def result_generator(count):
         'Inspection_End': '2/18/2015',
         'Zip_Code': '98005'
     }
-    # html, encoding = get_inspection_page(**use_params)
     html, encoding = load_inspection_page('inspection_page.html')
     parsed = parse_source(html, encoding)
     content_col = parsed.find("td", id="contentcol")
@@ -147,7 +146,6 @@ def result_generator(count):
         inspection_data = get_score_data(data_div)
         metadata.update(inspection_data)
         list1.append(metadata)
-        #yield metadata
     list1 = sorted(list1, key=lambda x: x['Average Score'], reverse = True)
     for metadata in list1[:count]:
         yield metadata
@@ -175,7 +173,7 @@ def get_geojson(result):
 
 if __name__ == '__main__':
     total_result = {'type': 'FeatureCollection', 'features': []}
-    for result in result_generator(30):
+    for result in result_generator(50):
         geojson = get_geojson(result)
         total_result['features'].append(geojson)
     with open('my_map.json', 'w') as fh:
